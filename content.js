@@ -14,7 +14,7 @@
 
   const panel = document.createElement("details");
   panel.id = PANEL_ID;
-  panel.open = true;
+  panel.open = false;
   panel.className = "llm-json-overlay";
 
   const summary = document.createElement("summary");
