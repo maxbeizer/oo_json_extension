@@ -32,10 +32,14 @@
   refreshButton.type = "button";
   refreshButton.textContent = "Refresh";
 
+  const applyButton = document.createElement("button");
+  applyButton.type = "button";
+  applyButton.textContent = "Apply to form";
+
   const status = document.createElement("span");
   status.className = "llm-json-status";
 
-  controls.append(copyButton, refreshButton, status);
+  controls.append(copyButton, refreshButton, applyButton, status);
 
   const textArea = document.createElement("textarea");
   textArea.className = "llm-json-textarea";
@@ -251,6 +255,119 @@
     return payload;
   }
 
+  function setInputValue(input, value) {
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function findLabeledInput(labelText) {
+    const labels = Array.from(document.querySelectorAll("label, .label"));
+    const target = labels.find((el) => cleanText(el.textContent || "").toLowerCase().includes(labelText.toLowerCase()));
+    if (!target) return null;
+    const container = target.closest("div") || target.parentElement;
+    if (!container) return null;
+    const input = container.querySelector("input, textarea");
+    return input;
+  }
+
+  function findLegGroups() {
+    // Leg rows in the builder use a consistent flex container with gap-2 and text-white.
+    return Array.from(document.querySelectorAll(".flex.flex-wrap.gap-2.items-center.text-white"));
+  }
+
+  function clickButtonByText(root, text) {
+    const btn = Array.from(root.querySelectorAll("button")).find((b) => cleanText(b.textContent || "").toLowerCase() === text.toLowerCase());
+    if (btn) btn.click();
+  }
+
+  function applyLegs(legs) {
+    if (!Array.isArray(legs) || !legs.length) return;
+    const groups = findLegGroups();
+    legs.forEach((leg, idx) => {
+      const group = groups[idx];
+      if (!group) return;
+      if (leg.side) clickButtonByText(group, leg.side);
+      if (leg.type) clickButtonByText(group, leg.type);
+
+      const inputs = Array.from(group.querySelectorAll("input"));
+      const qtyInput = inputs.find((inp) => inp.nextElementSibling && /QTY/i.test(inp.nextElementSibling.textContent || ""));
+      const dteInput = inputs.find((inp) => inp.nextElementSibling && /DTE/i.test(inp.nextElementSibling.textContent || ""));
+      const greekInput = inputs.find((inp) => !(inp.nextElementSibling && /QTY|DTE/i.test(inp.nextElementSibling.textContent || "")));
+
+      if (leg.qty) setInputValue(qtyInput, leg.qty);
+      if (leg.greek) setInputValue(greekInput, leg.greek);
+      if (leg.dte) setInputValue(dteInput, leg.dte);
+    });
+  }
+
+  function applyDateRange(dateRange) {
+    if (!dateRange) return;
+    if (dateRange.from) {
+      const start = findLabeledInput("Start Date");
+      setInputValue(start, dateRange.from);
+    }
+    if (dateRange.to) {
+      const end = findLabeledInput("End Date");
+      setInputValue(end, dateRange.to);
+    }
+  }
+
+  function applyTicker(header) {
+    if (!header || !header.title) return;
+    const tickerButton = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /ticker/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
+    if (!tickerButton) return;
+    const span = tickerButton.querySelector("span.block.truncate");
+    if (span) {
+      span.textContent = header.title;
+      tickerButton.dispatchEvent(new Event("click", { bubbles: true }));
+      tickerButton.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function applyMiscMetrics(data) {
+    if (!data || !data.metrics) return;
+    if (data.metrics["Starting Capital"]) {
+      const startFunds = findLabeledInput("Starting Funds");
+      setInputValue(startFunds, data.metrics["Starting Capital"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Entry Slippage"]) {
+      const entrySlip = findLabeledInput("Entry Slippage");
+      setInputValue(entrySlip, data.metrics["Entry Slippage"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Exit Slippage"]) {
+      const exitSlip = findLabeledInput("Exit Slippage");
+      setInputValue(exitSlip, data.metrics["Exit Slippage"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Opening Fees"] || data.metrics["Opening Fees:"]) {
+      const openFees = findLabeledInput("Opening");
+      setInputValue(openFees, (data.metrics["Opening Fees"] || data.metrics["Opening Fees:"]).replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Closing Fees"] || data.metrics["Closing Fees:"]) {
+      const closeFees = findLabeledInput("Closing");
+      setInputValue(closeFees, (data.metrics["Closing Fees"] || data.metrics["Closing Fees:"]).replace(/[^\d.]/g, ""));
+    }
+  }
+
+  function applyToForm(jsonText) {
+    if (!jsonText) return setStatus("Nothing to apply");
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (err) {
+      setStatus("Invalid JSON");
+      return;
+    }
+
+    applyDateRange(parsed.dateRange);
+    applyTicker(parsed.header);
+    applyLegs(parsed.legs);
+    applyMiscMetrics(parsed);
+
+    setStatus("Applied");
+  }
+
   function render() {
     state.data = buildPayload();
     textArea.value = JSON.stringify(state.data, null, 2);
@@ -269,6 +386,10 @@
   refreshButton.addEventListener("click", () => {
     render();
     setStatus("Refreshed");
+  });
+
+  applyButton.addEventListener("click", () => {
+    applyToForm(textArea.value);
   });
 
   const debouncedRender = debounce(render, 200);

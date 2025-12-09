@@ -16,6 +16,7 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
   - `legs`: each row of the legs table (text-only summary)
 - Renders JSON with `url`, `title`, `scrapedAt`, and the above fields.
 - Provides **Refresh** to re-scan and **Copy** to put the JSON onto your clipboard.
+- **Apply to form**: paste JSON into the textarea and click **Apply to form** to backfill key fields in the "New Backtest" drawer (dates, starting funds/fees, ticker label text, legs).
 
 ### Install (Chrome/Edge)
 
