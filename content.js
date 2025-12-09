@@ -44,6 +44,14 @@
   panel.append(controls, textArea);
   document.documentElement.appendChild(panel);
 
+  function debounce(fn, delay = 250) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  }
+
   function setStatus(msg) {
     status.textContent = msg;
     if (!msg) return;
@@ -156,6 +164,15 @@
     return legs;
   }
 
+  function extractDateRange(definitionPairs) {
+    const raw = definitionPairs["Dates:"] || definitionPairs["Dates"] || "";
+    if (!raw) return null;
+    const match = raw.match(/from:\s*(.+?)\s*to:\s*(.+)/i);
+    if (!match) return { text: raw };
+    const [, from, to] = match;
+    return { from: cleanText(from), to: cleanText(to), text: cleanText(raw) };
+  }
+
   function buildPayload() {
     const header = extractHeader();
     const definitionPairs = extractDefinitionPairs();
@@ -165,12 +182,15 @@
     const legs = extractLegsTable();
 
     const combined = { ...definitionPairs, ...headingPairs, ...labeledValues };
+    const dateRange = extractDateRange(definitionPairs);
 
     const payload = {
       url: location.href,
       title: document.title,
       scrapedAt: new Date().toISOString(),
       header,
+      metrics: definitionPairs,
+      dateRange,
       labeledValues: combined,
       lists,
       legs,
@@ -197,6 +217,22 @@
   refreshButton.addEventListener("click", () => {
     render();
     setStatus("Refreshed");
+  });
+
+  const debouncedRender = debounce(render, 200);
+
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (panel.contains(m.target)) continue; // ignore our own overlay
+      debouncedRender();
+      break;
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
   });
 
   render();

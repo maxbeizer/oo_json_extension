@@ -4,10 +4,12 @@ Lightweight MV3 content script that drops a `details` element on every page, pin
 
 ### How it works
 
-- Injects a `details` panel labeled “LLM JSON” at the bottom of the page.
+- Injects a `details` panel labeled “LLM JSON” at the bottom of the page (only on `optionomega.com`).
 - Extracts:
   - `header`: name/tags/link from the top bar (#message-heading)
-  - `labeledValues`: combined `dt`/`dd` pairs, headings with nearby values, and two-child card layouts
+  - `metrics`: every `dt`/`dd` card pair (covers Underlying, Dates, Entry/Misc bullets, P/L through Trades/Winners, etc.)
+  - `dateRange`: parsed `from` / `to` when present in the Dates card
+  - `labeledValues`: combined `metrics`, headings with nearby values, and two-child card layouts (backward compatible)
   - `lists`: visible bullet/numbered lists (e.g., Entry, Misc)
   - `legs`: each row of the legs table (text-only summary)
 - Renders JSON with `url`, `title`, `scrapedAt`, and the above fields.
