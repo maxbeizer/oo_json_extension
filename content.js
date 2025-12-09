@@ -262,6 +262,23 @@
     input.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  function setSelectText(button, value) {
+    if (!button) return;
+    const span = button.querySelector("span.block.truncate");
+    if (span) span.textContent = value;
+    button.dispatchEvent(new Event("click", { bubbles: true }));
+    button.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function findToggle(labelText) {
+    const toggles = Array.from(document.querySelectorAll("button.toggle"));
+    return toggles.find((btn) => {
+      const span = btn.nextElementSibling;
+      if (!span) return false;
+      return cleanText(span.textContent || "").toLowerCase().includes(labelText.toLowerCase());
+    });
+  }
+
   function findLabeledInput(labelText) {
     const labels = Array.from(document.querySelectorAll("label, .label"));
     const target = labels.find((el) => cleanText(el.textContent || "").toLowerCase().includes(labelText.toLowerCase()));
@@ -318,12 +335,7 @@
     if (!header || !header.title) return;
     const tickerButton = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /ticker/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
     if (!tickerButton) return;
-    const span = tickerButton.querySelector("span.block.truncate");
-    if (span) {
-      span.textContent = header.title;
-      tickerButton.dispatchEvent(new Event("click", { bubbles: true }));
-      tickerButton.dispatchEvent(new Event("change", { bubbles: true }));
-    }
+    setSelectText(tickerButton, header.title);
   }
 
   function applyMiscMetrics(data) {
@@ -360,12 +372,69 @@
       return;
     }
 
-    applyDateRange(parsed.dateRange);
-    applyTicker(parsed.header);
-    applyLegs(parsed.legs);
-    applyMiscMetrics(parsed);
+    const isInputSchema = parsed.dates && parsed.ticker;
 
-    setStatus("Applied");
+    if (isInputSchema) {
+      applyDateRange(parsed.dates);
+      applyTicker({ title: parsed.ticker });
+      applyLegs(parsed.legs);
+
+      if (parsed.startingFunds) setInputValue(findLabeledInput("Starting Funds"), parsed.startingFunds);
+      if (parsed.marginAllocationPct) setInputValue(findLabeledInput("Margin Allocation"), parsed.marginAllocationPct);
+      if (parsed.maxContractsPerTrade) setInputValue(findLabeledInput("Max Contracts Per Trade"), parsed.maxContractsPerTrade);
+      if (parsed.entrySlippage !== undefined) setInputValue(findLabeledInput("Entry Slippage"), parsed.entrySlippage);
+      if (parsed.exitSlippage !== undefined) setInputValue(findLabeledInput("Exit Slippage"), parsed.exitSlippage);
+      if (parsed.openingFees !== undefined) setInputValue(findLabeledInput("Opening"), parsed.openingFees);
+      if (parsed.closingFees !== undefined) setInputValue(findLabeledInput("Closing"), parsed.closingFees);
+      if (parsed.roundStrikesTo !== undefined) setInputValue(findLabeledInput("Round Strikes"), parsed.roundStrikesTo);
+
+      if (parsed.entryTime) setInputValue(findLabeledInput("Entry Time"), parsed.entryTime);
+      if (parsed.entryFrequency) {
+        const freqBtn = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /frequency/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
+        setSelectText(freqBtn, parsed.entryFrequency);
+      }
+
+      const toggleMap = [
+        ["Use Exact DTE", parsed.useExactDTE],
+        ["Use Floating Entry Time", parsed.useFloatingEntryTime],
+        ["Use VIX", parsed.useVix],
+        ["Use Technical Indicators", parsed.useTechnicalIndicators || parsed.exitUseTechIndicators],
+        ["Use Gaps", parsed.useGaps],
+        ["Use Intraday Movement", parsed.useIntradayMovement],
+        ["Use Opening Range Breakout", parsed.useOpeningRangeBreakout],
+        ["Use Leg Groups", parsed.useLegGroups],
+        ["Use Commissions & Fees", parsed.useFees],
+        ["Use Slippage", parsed.useSlippage],
+        ["Ignore Trades with Wide Bid-Ask Spread", parsed.ignoreWideBidAsk],
+        ["Close Open Trades on Test Completion", parsed.closeOnCompletion],
+        ["Use Min/Max Entry Premium", parsed.useMinMaxEntryPremium],
+        ["Use Entry Short/Long Ratio", parsed.useEntryShortLongRatio],
+        ["Use Blackout Days", parsed.useBlackoutDays],
+        ["Re-Enter Trades After Exit", parsed.reenterAfterExit],
+        ["Use Profit Actions", parsed.useProfitActions],
+        ["Use Early Exit", parsed.useEarlyExit],
+        ["Use Delta", parsed.exitUseDelta],
+        ["Use Underlying Price Movement", parsed.exitUseUnderlyingMovement],
+        ["Use Short/Long Ratio", parsed.exitUseShortLongRatio],
+        ["Use VIX", parsed.exitUseVix]
+      ];
+
+      toggleMap.forEach(([label, value]) => {
+        if (value === undefined) return;
+        const toggle = findToggle(label);
+        if (!toggle) return;
+        const isOn = toggle.getAttribute("aria-checked") === "true";
+        if (isOn !== Boolean(value)) toggle.click();
+      });
+
+      setStatus("Applied (input schema)");
+    } else {
+      applyDateRange(parsed.dateRange);
+      applyTicker(parsed.header);
+      applyLegs(parsed.legs);
+      applyMiscMetrics(parsed);
+      setStatus("Applied (result payload)");
+    }
   }
 
   function render() {

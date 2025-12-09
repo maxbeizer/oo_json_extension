@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://optionomega.com/schemas/backtest-result.schema.json",
+  "title": "OptionOmega Backtest Result (Overlay Payload)",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "title": {
+      "type": "string"
+    },
+    "scrapedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "link": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Key/value pairs scraped from dt/dd cards. Example keys: 'Underlying', 'Dates:', 'P/L', 'CAGR', 'Max Drawdown', 'Starting Capital', 'Ending Capital', 'Avg Per Trade', 'Avg Winner', 'Avg Loser', 'Max Winner', 'Max Loser', 'Avg Minutes In Trade', 'Trades', 'Winners', 'Opening Fees', 'Closing Fees', 'Entry Slippage', 'Exit Slippage'. Values are strings as rendered."
+    },
+    "dateRange": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "labeledValues": {
+      "type": "object",
+      "description": "Union of metrics plus heading/value and two-child card heuristics"
+    },
+    "lists": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "description": "Visible bullet/numbered lists (Entry, Misc, etc.)"
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "side",
+          "type"
+        ],
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "Sell",
+              "Buy"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Call",
+              "Put"
+            ]
+          },
+          "qty": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "greek": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "dte": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "url",
+    "title",
+    "scrapedAt",
+    "header",
+    "metrics",
+    "labeledValues",
+    "lists",
+    "legs"
+  ]
+}
