@@ -39,3 +39,7 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 - Adjust extraction logic in `content.js` (`extractLabeledValues`, `extractHeadingPairs`, `extractLists`).
 - Add custom selectors or stable test IDs from your app if you need deterministic fields.
+
+### License
+
+MIT
