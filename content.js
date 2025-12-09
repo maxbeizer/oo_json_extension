@@ -156,11 +156,38 @@
     const legsDt = Array.from(document.querySelectorAll("dt")).find((el) => /Legs/i.test(el.textContent || ""));
     const table = legsDt?.nextElementSibling?.querySelector("table");
     if (!table) return legs;
+
+    const isActive = (btn) => btn && /(ooRed|ooGreen)/i.test(btn.className || "");
+
     table.querySelectorAll("tbody tr").forEach((row) => {
       if (!isReadable(row)) return;
-      const text = cleanText(row.textContent || "");
-      if (text) legs.push(text);
+      const buttons = Array.from(row.querySelectorAll("button"));
+      const sBtn = buttons.find((b) => /\bS\b/.test(b.textContent || ""));
+      const bBtn = buttons.find((b) => /\bB\b/.test(b.textContent || ""));
+      const cBtn = buttons.find((b) => /\bC\b/.test(b.textContent || ""));
+      const pBtn = buttons.find((b) => /\bP\b/.test(b.textContent || ""));
+
+      const side = isActive(sBtn) ? "Sell" : isActive(bBtn) ? "Buy" : null;
+      const optionType = isActive(cBtn) ? "Call" : isActive(pBtn) ? "Put" : null;
+      if (!side || !optionType) return;
+
+      const inputs = Array.from(row.querySelectorAll("input"));
+      const qty = cleanText(inputs[0]?.value || inputs[0]?.getAttribute("value") || "");
+      const greek = cleanText(inputs[1]?.value || inputs[1]?.getAttribute("value") || "");
+      const dte = cleanText(inputs[2]?.value || inputs[2]?.getAttribute("value") || "");
+
+      const entry = {
+        side,
+        type: optionType,
+        qty: qty || undefined,
+        greek: greek || undefined,
+        dte: dte || undefined,
+      };
+      entry.text = cleanText([side, optionType, qty && `qty ${qty}`, dte && `dte ${dte}`].filter(Boolean).join(" "));
+
+      legs.push(entry);
     });
+
     return legs;
   }
 
