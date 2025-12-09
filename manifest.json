@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "LLM JSON Overlay",
+    "description": "Shows a bottom details panel with extracted page data as JSON for quick LLM pasting.",
+    "version": "0.1.0",
+    "permissions": [],
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "content.css"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}

@@ -1,0 +1,76 @@
+#llm-json-overlay {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  max-width: 720px;
+  width: min(90vw, 720px);
+  background: rgba(25, 25, 25, 0.95);
+  color: #f6f7fb;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+#llm-json-overlay summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  outline: none;
+}
+
+#llm-json-overlay[open] summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.llm-json-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px 0;
+}
+
+.llm-json-controls button {
+  background: #f0b400;
+  border: none;
+  color: #0b0b0b;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.llm-json-controls button:hover {
+  filter: brightness(1.05);
+}
+
+.llm-json-status {
+  color: #a7ffd1;
+  font-size: 12px;
+}
+
+.llm-json-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 260px;
+  resize: vertical;
+  padding: 12px 14px 14px;
+  margin: 6px 0 10px;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #f6f7fb;
+  font-size: 13px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  line-height: 1.4;
+}
+
+#llm-json-overlay summary:focus,
+.llm-json-textarea:focus,
+.llm-json-controls button:focus {
+  outline: 2px solid #f0b400;
+  outline-offset: 2px;
+}
