@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 ### How it works
 
-- Injects a `details` panel labeled “LLM JSON” at the bottom of the page (only on `optionomega.com`).
+- Injects a `details` panel labeled “LLM JSON” at the bottom of the page (only on `optionomega.com/test/*`).
 - Extracts:
   - `header`: name/tags/link from the top bar (#message-heading)
   - `metrics`: every `dt`/`dd` card pair (covers Underlying, Dates, Entry/Misc bullets, P/L through Trades/Winners, etc.)
