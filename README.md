@@ -1,6 +1,8 @@
-## LLM JSON Overlay Extension
+## OptionOmega JSON Overlay Extension
 
-Lightweight MV3 content script that drops a `details` element on every page, pins it to the bottom, and fills it with JSON extracted from on-screen data so you can paste directly into an LLM.
+A lightweight browser extension that adds the output of a backtest as JSON to a `details` element at the bottom of the page. This makes it easy to, for example, feed the results to an LLM perhaps. More of a proof of concept of a feature request for optionomega.com
+
+https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 ### How it works
 
