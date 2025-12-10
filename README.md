@@ -30,7 +30,6 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 - Result payload (`content.js` output): `schema/backtest-result.schema.json` (draft-07). Required: `url`, `title`, `scrapedAt`, `header`, `metrics`, `labeledValues`, `lists`, `legs`. Optional: `dateRange` (`from`/`to`/`text` or null; `from`/`to` emitted as ISO 8601 when parseable). Legs include `side`, `type`, `qty`, `dte`, `legType`, `text`.
 - Input form payload (for **Apply to form**): `schema/backtest-input.schema.json` (draft-07) documents the accepted fields for seeding the backtest drawer (dates expect ISO 8601 `YYYY-MM-DD`).
-- `output.schema.json` was merged into `backtest-result.schema.json`; only the two files above remain.
 
 ### Extend or tweak
 
