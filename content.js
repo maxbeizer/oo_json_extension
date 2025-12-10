@@ -167,13 +167,15 @@
       const cBtn = buttons.find((b) => /\bC\b/.test(b.textContent || ""));
       const pBtn = buttons.find((b) => /\bP\b/.test(b.textContent || ""));
 
+      const offsetTypeBtn = row.querySelector("button.selectInput--nested") || row.querySelector("button.selectInput");
+      const offsetType = offsetTypeBtn ? cleanText(offsetTypeBtn.textContent || "") : undefined;
+
       const side = isActive(sBtn) ? "Sell" : isActive(bBtn) ? "Buy" : null;
       const optionType = isActive(cBtn) ? "Call" : isActive(pBtn) ? "Put" : null;
       if (!side || !optionType) return;
 
       const inputs = Array.from(row.querySelectorAll("input"));
       const qtyRaw = cleanText(inputs[0]?.value || inputs[0]?.getAttribute("value") || "");
-      const greekRaw = cleanText(inputs[1]?.value || inputs[1]?.getAttribute("value") || "");
       const dteRaw = cleanText(inputs[2]?.value || inputs[2]?.getAttribute("value") || "");
 
       const toNum = (v) => {
@@ -182,15 +184,14 @@
       };
 
       const qty = qtyRaw ? toNum(qtyRaw) : undefined;
-      const greek = greekRaw ? toNum(greekRaw) : undefined;
       const dte = dteRaw ? toNum(dteRaw) : undefined;
 
       const entry = {
         side,
         type: optionType,
         qty,
-        greek,
         dte,
+        offsetType,
       };
       entry.text = cleanText([side, optionType, qtyRaw && `qty ${qtyRaw}`, dteRaw && `dte ${dteRaw}`].filter(Boolean).join(" "));
 
