@@ -172,18 +172,27 @@
       if (!side || !optionType) return;
 
       const inputs = Array.from(row.querySelectorAll("input"));
-      const qty = cleanText(inputs[0]?.value || inputs[0]?.getAttribute("value") || "");
-      const greek = cleanText(inputs[1]?.value || inputs[1]?.getAttribute("value") || "");
-      const dte = cleanText(inputs[2]?.value || inputs[2]?.getAttribute("value") || "");
+      const qtyRaw = cleanText(inputs[0]?.value || inputs[0]?.getAttribute("value") || "");
+      const greekRaw = cleanText(inputs[1]?.value || inputs[1]?.getAttribute("value") || "");
+      const dteRaw = cleanText(inputs[2]?.value || inputs[2]?.getAttribute("value") || "");
+
+      const toNum = (v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : v || undefined;
+      };
+
+      const qty = qtyRaw ? toNum(qtyRaw) : undefined;
+      const greek = greekRaw ? toNum(greekRaw) : undefined;
+      const dte = dteRaw ? toNum(dteRaw) : undefined;
 
       const entry = {
         side,
         type: optionType,
-        qty: qty || undefined,
-        greek: greek || undefined,
-        dte: dte || undefined,
+        qty,
+        greek,
+        dte,
       };
-      entry.text = cleanText([side, optionType, qty && `qty ${qty}`, dte && `dte ${dte}`].filter(Boolean).join(" "));
+      entry.text = cleanText([side, optionType, qtyRaw && `qty ${qtyRaw}`, dteRaw && `dte ${dteRaw}`].filter(Boolean).join(" "));
 
       legs.push(entry);
     });
@@ -209,6 +218,13 @@
     const legs = extractLegsTable();
 
     const combined = { ...definitionPairs, ...headingPairs, ...labeledValues };
+    Object.keys(combined).forEach((key) => {
+      const val = combined[key];
+      const keyWords = key.split(" ").length;
+      const valWords = typeof val === "string" ? val.split(" ").length : 0;
+      const looksCombinedMetric = /Total Premium|Starting Capital|Ending Capital|Trades|Winners/i.test(key);
+      if (looksCombinedMetric || keyWords > 4 || valWords > 8) delete combined[key];
+    });
     const dateRange = extractDateRange(definitionPairs);
 
     const payload = {
@@ -216,12 +232,20 @@
       title: document.title,
       scrapedAt: new Date().toISOString(),
       header,
-      metrics: definitionPairs,
+      metrics: { ...definitionPairs },
       dateRange,
       labeledValues: combined,
       lists,
       legs,
     };
+
+    // Improve readability for Entry/Exit/Misc using list bullets when present
+    lists.forEach((list) => {
+      const text = list.join("; ");
+      if (/open trades|daily|dte|portfolio|contract|ema/i.test(text)) payload.metrics.Entry = text;
+      else if (/stop loss|exit/i.test(text)) payload.metrics.Exit = text;
+      else if (/fee|slippage|cap/i.test(text)) payload.metrics.Misc = text;
+    });
 
     return payload;
   }
