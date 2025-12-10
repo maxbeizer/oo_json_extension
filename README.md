@@ -4,6 +4,9 @@ A small helper extension that shows a live JSON snapshot of a backtest and can r
 
 https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
+> [!WARNING]
+> This is experimental and best effort. The API is very much under heavy development and there is not a stable version at this time. Use at your own risk.
+
 ### Quick start
 
 - Load the folder as an unpacked extension (`chrome://extensions` → Load unpacked → `oo_json_extension`). No build step needed.
