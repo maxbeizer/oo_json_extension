@@ -92,10 +92,12 @@
           "additionalProperties": false,
           "properties": {
             "from": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
             },
             "to": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
             },
             "text": {
               "type": "string"

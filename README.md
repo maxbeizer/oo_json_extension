@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 - `header`: title/tags/link from the top bar.
 - `metrics`: `dt`/`dd` card pairs (Underlying, Dates, P/L, trades, fees, etc.).
-- `dateRange`: parsed `from`/`to`/`text` when present.
+- `dateRange`: parsed `from`/`to`/`text` when present (dates normalized to ISO 8601 when parseable).
 - `labeledValues`: headings paired with short numeric-ish values (fallback capture for two-column cards).
 - `lists`: visible `ul`/`ol` items (entry/misc bullets).
 - `legs`: each row in the legs table (`side`, `type`, `qty`, `dte`, `legType`, `text`).
@@ -28,8 +28,8 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 ### Schemas
 
-- Result payload (`content.js` output): `schema/backtest-result.schema.json` (draft-07). Required: `url`, `title`, `scrapedAt`, `header`, `metrics`, `labeledValues`, `lists`, `legs`. Optional: `dateRange` (`from`/`to`/`text` or null). Legs include `side`, `type`, `qty`, `dte`, `legType`, `text`.
-- Input form payload (for **Apply to form**): `schema/backtest-input.schema.json` (draft-07) documents the accepted fields for seeding the backtest drawer.
+- Result payload (`content.js` output): `schema/backtest-result.schema.json` (draft-07). Required: `url`, `title`, `scrapedAt`, `header`, `metrics`, `labeledValues`, `lists`, `legs`. Optional: `dateRange` (`from`/`to`/`text` or null; `from`/`to` emitted as ISO 8601 when parseable). Legs include `side`, `type`, `qty`, `dte`, `legType`, `text`.
+- Input form payload (for **Apply to form**): `schema/backtest-input.schema.json` (draft-07) documents the accepted fields for seeding the backtest drawer (dates expect ISO 8601 `YYYY-MM-DD`).
 - `output.schema.json` was merged into `backtest-result.schema.json`; only the two files above remain.
 
 ### Extend or tweak

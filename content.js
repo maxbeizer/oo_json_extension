@@ -155,6 +155,12 @@
     return pairs;
   }
 
+  function toISODate(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().split("T")[0];
+  }
+
   function extractLegsTable() {
     const legs = [];
     const legsDt = Array.from(document.querySelectorAll("dt")).find((el) => /Legs/i.test(el.textContent || ""));
@@ -211,7 +217,13 @@
     const match = raw.match(/from:\s*(.+?)\s*to:\s*(.+)/i);
     if (!match) return { text: raw };
     const [, from, to] = match;
-    return { from: cleanText(from), to: cleanText(to), text: cleanText(raw) };
+    const fromISO = toISODate(cleanText(from));
+    const toISO = toISODate(cleanText(to));
+    return {
+      from: fromISO || cleanText(from),
+      to: toISO || cleanText(to),
+      text: cleanText(raw),
+    };
   }
 
   function buildPayload() {

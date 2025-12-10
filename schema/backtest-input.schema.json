@@ -14,10 +14,12 @@
       "properties": {
         "from": {
           "type": "string",
+          "format": "date",
           "description": "Start date in YYYY-MM-DD (ISO 8601 format)"
         },
         "to": {
           "type": "string",
+          "format": "date",
           "description": "End date in YYYY-MM-DD (ISO 8601 format)"
         },
         "preset": {
