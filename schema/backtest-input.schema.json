@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://optionomega.com/schemas/backtest-input.schema.json",
+  "$id": "https://example.com/oo-json-extension/backtest-input.schema.json",
   "title": "OptionOmega Backtest Input",
   "type": "object",
   "additionalProperties": false,
@@ -14,11 +14,11 @@
       "properties": {
         "from": {
           "type": "string",
-          "description": "Start date in MM/DD/YYYY"
+          "description": "Start date in YYYY-MM-DD (ISO 8601 format)"
         },
         "to": {
           "type": "string",
-          "description": "End date in MM/DD/YYYY"
+          "description": "End date in YYYY-MM-DD (ISO 8601 format)"
         },
         "preset": {
           "type": "string",
