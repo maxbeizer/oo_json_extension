@@ -32,10 +32,14 @@
   refreshButton.type = "button";
   refreshButton.textContent = "Refresh";
 
+  const applyButton = document.createElement("button");
+  applyButton.type = "button";
+  applyButton.textContent = "Apply to form";
+
   const status = document.createElement("span");
   status.className = "llm-json-status";
 
-  controls.append(copyButton, refreshButton, status);
+  controls.append(copyButton, refreshButton, applyButton, status);
 
   const textArea = document.createElement("textarea");
   textArea.className = "llm-json-textarea";
@@ -151,6 +155,12 @@
     return pairs;
   }
 
+  function toISODate(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().split("T")[0];
+  }
+
   function extractLegsTable() {
     const legs = [];
     const legsDt = Array.from(document.querySelectorAll("dt")).find((el) => /Legs/i.test(el.textContent || ""));
@@ -167,8 +177,8 @@
       const cBtn = buttons.find((b) => /\bC\b/.test(b.textContent || ""));
       const pBtn = buttons.find((b) => /\bP\b/.test(b.textContent || ""));
 
-      const offsetTypeBtn = row.querySelector("button.selectInput--nested") || row.querySelector("button.selectInput");
-      const offsetType = offsetTypeBtn ? cleanText(offsetTypeBtn.textContent || "") : undefined;
+      const legTypeBtn = row.querySelector("button.selectInput--nested") || row.querySelector("button.selectInput");
+      const legType = legTypeBtn ? cleanText(legTypeBtn.textContent || "") : undefined;
 
       const side = isActive(sBtn) ? "Sell" : isActive(bBtn) ? "Buy" : null;
       const optionType = isActive(cBtn) ? "Call" : isActive(pBtn) ? "Put" : null;
@@ -191,7 +201,7 @@
         type: optionType,
         qty,
         dte,
-        offsetType,
+        legType,
       };
       entry.text = cleanText([side, optionType, qtyRaw && `qty ${qtyRaw}`, dteRaw && `dte ${dteRaw}`].filter(Boolean).join(" "));
 
@@ -207,7 +217,13 @@
     const match = raw.match(/from:\s*(.+?)\s*to:\s*(.+)/i);
     if (!match) return { text: raw };
     const [, from, to] = match;
-    return { from: cleanText(from), to: cleanText(to), text: cleanText(raw) };
+    const fromISO = toISODate(cleanText(from));
+    const toISO = toISODate(cleanText(to));
+    return {
+      from: fromISO || cleanText(from),
+      to: toISO || cleanText(to),
+      text: cleanText(raw),
+    };
   }
 
   function buildPayload() {
@@ -251,6 +267,186 @@
     return payload;
   }
 
+  function setInputValue(input, value) {
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function setSelectText(button, value) {
+    if (!button) return;
+    const span = button.querySelector("span.block.truncate");
+    if (span) span.textContent = value;
+    button.dispatchEvent(new Event("click", { bubbles: true }));
+    button.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function findToggle(labelText) {
+    const toggles = Array.from(document.querySelectorAll("button.toggle"));
+    return toggles.find((btn) => {
+      const span = btn.nextElementSibling;
+      if (!span) return false;
+      return cleanText(span.textContent || "").toLowerCase().includes(labelText.toLowerCase());
+    });
+  }
+
+  function findLabeledInput(labelText) {
+    const labels = Array.from(document.querySelectorAll("label, .label"));
+    const target = labels.find((el) => cleanText(el.textContent || "").toLowerCase().includes(labelText.toLowerCase()));
+    if (!target) return null;
+    const container = target.closest("div") || target.parentElement;
+    if (!container) return null;
+    const input = container.querySelector("input, textarea");
+    return input;
+  }
+
+  function findLegGroups() {
+    // Leg rows in the builder use a consistent flex container with gap-2 and text-white.
+    return Array.from(document.querySelectorAll(".flex.flex-wrap.gap-2.items-center.text-white"));
+  }
+
+  function clickButtonByText(root, text) {
+    const btn = Array.from(root.querySelectorAll("button")).find((b) => cleanText(b.textContent || "").toLowerCase() === text.toLowerCase());
+    if (btn) btn.click();
+  }
+
+  function applyLegs(legs) {
+    if (!Array.isArray(legs) || !legs.length) return;
+    const groups = findLegGroups();
+    legs.forEach((leg, idx) => {
+      const group = groups[idx];
+      if (!group) return;
+      if (leg.side) clickButtonByText(group, leg.side);
+      if (leg.type) clickButtonByText(group, leg.type);
+
+      const inputs = Array.from(group.querySelectorAll("input"));
+      const qtyInput = inputs.find((inp) => inp.nextElementSibling && /QTY/i.test(inp.nextElementSibling.textContent || ""));
+      const dteInput = inputs.find((inp) => inp.nextElementSibling && /DTE/i.test(inp.nextElementSibling.textContent || ""));
+
+      if (leg.qty) setInputValue(qtyInput, leg.qty);
+      if (leg.dte) setInputValue(dteInput, leg.dte);
+    });
+  }
+
+  function applyDateRange(dateRange) {
+    if (!dateRange) return;
+    if (dateRange.from) {
+      const start = findLabeledInput("Start Date");
+      setInputValue(start, dateRange.from);
+    }
+    if (dateRange.to) {
+      const end = findLabeledInput("End Date");
+      setInputValue(end, dateRange.to);
+    }
+  }
+
+  function applyTicker(header) {
+    if (!header || !header.title) return;
+    const tickerButton = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /ticker/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
+    if (!tickerButton) return;
+    setSelectText(tickerButton, header.title);
+  }
+
+  function applyMiscMetrics(data) {
+    if (!data || !data.metrics) return;
+    if (data.metrics["Starting Capital"]) {
+      const startFunds = findLabeledInput("Starting Funds");
+      setInputValue(startFunds, data.metrics["Starting Capital"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Entry Slippage"]) {
+      const entrySlip = findLabeledInput("Entry Slippage");
+      setInputValue(entrySlip, data.metrics["Entry Slippage"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Exit Slippage"]) {
+      const exitSlip = findLabeledInput("Exit Slippage");
+      setInputValue(exitSlip, data.metrics["Exit Slippage"].replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Opening Fees"] || data.metrics["Opening Fees:"]) {
+      const openFees = findLabeledInput("Opening");
+      setInputValue(openFees, (data.metrics["Opening Fees"] || data.metrics["Opening Fees:"]).replace(/[^\d.]/g, ""));
+    }
+    if (data.metrics["Closing Fees"] || data.metrics["Closing Fees:"]) {
+      const closeFees = findLabeledInput("Closing");
+      setInputValue(closeFees, (data.metrics["Closing Fees"] || data.metrics["Closing Fees:"]).replace(/[^\d.]/g, ""));
+    }
+  }
+
+  function applyToForm(jsonText) {
+    if (!jsonText) return setStatus("Nothing to apply");
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (err) {
+      setStatus("Invalid JSON");
+      return;
+    }
+
+    const isInputSchema = parsed.dates && parsed.ticker;
+
+    if (isInputSchema) {
+      applyDateRange(parsed.dates);
+      applyTicker({ title: parsed.ticker });
+      applyLegs(parsed.legs);
+
+      if (parsed.startingFunds) setInputValue(findLabeledInput("Starting Funds"), parsed.startingFunds);
+      if (parsed.marginAllocationPct) setInputValue(findLabeledInput("Margin Allocation"), parsed.marginAllocationPct);
+      if (parsed.maxContractsPerTrade) setInputValue(findLabeledInput("Max Contracts Per Trade"), parsed.maxContractsPerTrade);
+      if (parsed.entrySlippage !== undefined) setInputValue(findLabeledInput("Entry Slippage"), parsed.entrySlippage);
+      if (parsed.exitSlippage !== undefined) setInputValue(findLabeledInput("Exit Slippage"), parsed.exitSlippage);
+      if (parsed.openingFees !== undefined) setInputValue(findLabeledInput("Opening"), parsed.openingFees);
+      if (parsed.closingFees !== undefined) setInputValue(findLabeledInput("Closing"), parsed.closingFees);
+      if (parsed.roundStrikesTo !== undefined) setInputValue(findLabeledInput("Round Strikes"), parsed.roundStrikesTo);
+
+      if (parsed.entryTime) setInputValue(findLabeledInput("Entry Time"), parsed.entryTime);
+      if (parsed.entryFrequency) {
+        const freqBtn = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /frequency/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
+        setSelectText(freqBtn, parsed.entryFrequency);
+      }
+
+      const toggleMap = [
+        ["Use Exact DTE", parsed.useExactDTE],
+        ["Use Floating Entry Time", parsed.useFloatingEntryTime],
+        ["Use VIX", parsed.useVix],
+        ["Use Technical Indicators", parsed.useTechnicalIndicators || parsed.exitUseTechIndicators],
+        ["Use Gaps", parsed.useGaps],
+        ["Use Intraday Movement", parsed.useIntradayMovement],
+        ["Use Opening Range Breakout", parsed.useOpeningRangeBreakout],
+        ["Use Leg Groups", parsed.useLegGroups],
+        ["Use Commissions & Fees", parsed.useFees],
+        ["Use Slippage", parsed.useSlippage],
+        ["Ignore Trades with Wide Bid-Ask Spread", parsed.ignoreWideBidAsk],
+        ["Close Open Trades on Test Completion", parsed.closeOnCompletion],
+        ["Use Min/Max Entry Premium", parsed.useMinMaxEntryPremium],
+        ["Use Entry Short/Long Ratio", parsed.useEntryShortLongRatio],
+        ["Use Blackout Days", parsed.useBlackoutDays],
+        ["Re-Enter Trades After Exit", parsed.reenterAfterExit],
+        ["Use Profit Actions", parsed.useProfitActions],
+        ["Use Early Exit", parsed.useEarlyExit],
+        ["Use Delta", parsed.exitUseDelta],
+        ["Use Underlying Price Movement", parsed.exitUseUnderlyingMovement],
+        ["Use Short/Long Ratio", parsed.exitUseShortLongRatio],
+        ["Use VIX", parsed.exitUseVix]
+      ];
+
+      toggleMap.forEach(([label, value]) => {
+        if (value === undefined) return;
+        const toggle = findToggle(label);
+        if (!toggle) return;
+        const isOn = toggle.getAttribute("aria-checked") === "true";
+        if (isOn !== Boolean(value)) toggle.click();
+      });
+
+      setStatus("Applied (input schema)");
+    } else {
+      applyDateRange(parsed.dateRange);
+      applyTicker(parsed.header);
+      applyLegs(parsed.legs);
+      applyMiscMetrics(parsed);
+      setStatus("Applied (result payload)");
+    }
+  }
+
   function render() {
     state.data = buildPayload();
     textArea.value = JSON.stringify(state.data, null, 2);
@@ -269,6 +465,10 @@
   refreshButton.addEventListener("click", () => {
     render();
     setStatus("Refreshed");
+  });
+
+  applyButton.addEventListener("click", () => {
+    applyToForm(textArea.value);
   });
 
   const debouncedRender = debounce(render, 200);

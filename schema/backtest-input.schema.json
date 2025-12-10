@@ -1,0 +1,307 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/oo-json-extension/backtest-input.schema.json",
+  "title": "OptionOmega Backtest Input",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dates": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date in YYYY-MM-DD (ISO 8601 format)"
+        },
+        "to": {
+          "type": "string",
+          "format": "date",
+          "description": "End date in YYYY-MM-DD (ISO 8601 format)"
+        },
+        "preset": {
+          "type": "string",
+          "description": "Optional preset label such as 'YTD', 'Last 30 days', etc."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ticker": {
+      "type": "string",
+      "description": "Underlying ticker symbol (e.g., SPX)"
+    },
+    "commonStrategy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional strategy preset label"
+    },
+    "entryFrequency": {
+      "type": "string",
+      "description": "Entry cadence, e.g., 'Daily'"
+    },
+    "entryTime": {
+      "type": "string",
+      "description": "Entry time in HH:MM (24h)"
+    },
+    "useExactDTE": {
+      "type": "boolean"
+    },
+    "useFloatingEntryTime": {
+      "type": "boolean"
+    },
+    "roundStrikesTo": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Nearest strike rounding increment"
+    },
+    "maxOpenTrades": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "maxContractsPerTrade": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "startingFunds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "marginAllocationPct": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "maxAllocationPerTrade": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ignoreMargin": {
+      "type": "boolean"
+    },
+    "pruneOldestTrades": {
+      "type": "boolean"
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "side",
+          "type"
+        ],
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "Sell",
+              "Buy"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Call",
+              "Put"
+            ]
+          },
+          "qty": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "legType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "Δ",
+              "±",
+              "none"
+            ],
+            "description": "Which leg selector is active"
+          },
+          "dte": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "exactStrikeOffset": {
+            "type": "boolean",
+            "description": "Apply exact strike offset toggle"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "useVix": {
+      "type": "boolean"
+    },
+    "useTechnicalIndicators": {
+      "type": "boolean"
+    },
+    "useGaps": {
+      "type": "boolean"
+    },
+    "useIntradayMovement": {
+      "type": "boolean"
+    },
+    "useOpeningRangeBreakout": {
+      "type": "boolean"
+    },
+    "useLegGroups": {
+      "type": "boolean"
+    },
+    "profitTarget": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "profitTargetMode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "%, $ or other option displayed in nested select"
+    },
+    "stopLoss": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "stopLossMode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "useProfitActions": {
+      "type": "boolean"
+    },
+    "useEarlyExit": {
+      "type": "boolean"
+    },
+    "exitUseVix": {
+      "type": "boolean"
+    },
+    "exitUseTechIndicators": {
+      "type": "boolean"
+    },
+    "exitUseUnderlyingMovement": {
+      "type": "boolean"
+    },
+    "exitUseDelta": {
+      "type": "boolean"
+    },
+    "exitUseShortLongRatio": {
+      "type": "boolean"
+    },
+    "useFees": {
+      "type": "boolean"
+    },
+    "openingFees": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "closingFees": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "useSlippage": {
+      "type": "boolean"
+    },
+    "entrySlippage": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "exitSlippage": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ignoreWideBidAsk": {
+      "type": "boolean"
+    },
+    "closeOnCompletion": {
+      "type": "boolean"
+    },
+    "useMinMaxEntryPremium": {
+      "type": "boolean"
+    },
+    "entryPremiumMin": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "entryPremiumMax": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "useEntryShortLongRatio": {
+      "type": "boolean"
+    },
+    "entryShortLongRatioMin": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "entryShortLongRatioMax": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "useBlackoutDays": {
+      "type": "boolean"
+    },
+    "blackoutDays": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "ISO date"
+      }
+    },
+    "reenterAfterExit": {
+      "type": "boolean"
+    },
+    "csvCustomSignals": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "dates",
+    "ticker",
+    "legs"
+  ]
+}
