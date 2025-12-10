@@ -161,6 +161,31 @@
     return d.toISOString().split("T")[0];
   }
 
+  function parseTime(value) {
+    if (!value) return null;
+    const cleaned = cleanText(value);
+    const match = cleaned.match(/(\d{1,2}:\d{2})\s*(AM|PM)?/i);
+    if (!match) return null;
+    let [_, hhmm, meridiem] = match;
+    let [hh, mm] = hhmm.split(":").map(Number);
+    if (meridiem) {
+      const mer = meridiem.toUpperCase();
+      if (mer === "PM" && hh !== 12) hh += 12;
+      if (mer === "AM" && hh === 12) hh = 0;
+    }
+    const pad = (n) => n.toString().padStart(2, "0");
+    return `${pad(hh)}:${pad(mm)}`;
+  }
+
+  function parseDays(text) {
+    const days = [];
+    const map = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    map.forEach((day) => {
+      if (new RegExp(day, "i").test(text)) days.push(day);
+    });
+    return days.length ? days : null;
+  }
+
   function extractLegsTable() {
     const legs = [];
     const legsDt = Array.from(document.querySelectorAll("dt")).find((el) => /Legs/i.test(el.textContent || ""));
@@ -226,6 +251,65 @@
     };
   }
 
+  function deriveInputsFromLists(lists) {
+    const derived = {};
+
+    lists.forEach((list) => {
+      const text = list.join("; ");
+
+      list.forEach((item) => {
+        const it = cleanText(item);
+
+        if (/open\s+trades\s+at/i.test(it)) {
+          const t = parseTime(it);
+          if (t) derived.entryTime = t;
+        }
+
+        if (/exit\s+trades\s+at/i.test(it)) {
+          const t = parseTime(it);
+          if (t) derived.exitTime = t;
+        }
+
+        if (/profit\s*target\s*:\s*([\d.]+)/i.test(it)) {
+          const m = it.match(/profit\s*target\s*:\s*([\d.]+)/i);
+          if (m) {
+            derived.profitTarget = Number(m[1]);
+            derived.profitTargetMode = "%";
+          }
+        }
+
+        if (/use\s+exact\s+dte/i.test(it)) derived.useExactDTE = true;
+
+        if (/vix\s*:\s*max\s*([\d.]+)/i.test(it)) {
+          const m = it.match(/vix\s*:\s*max\s*([\d.]+)/i);
+          if (m) {
+            derived.vixMax = Number(m[1]);
+            derived.useVix = true;
+          }
+        }
+
+        if (/cap\s+profits/i.test(it)) derived.capProfits = true;
+
+        if (/every\s+/i.test(it)) {
+          const days = parseDays(it);
+          if (days) derived.entryDays = days;
+        }
+      });
+
+      if (/contract\(s\)/i.test(text)) {
+        const m = text.match(/up\s+to\s+(\d+)/i);
+        if (m) derived.maxContractsPerTrade = Number(m[1]);
+      }
+
+      if (/allocate\s+(\d+)%/i.test(text)) {
+        const m = text.match(/allocate\s+(\d+)%/i);
+        if (m) derived.marginAllocationPct = Number(m[1]);
+      }
+    });
+
+    return derived;
+  }
+
   function buildPayload() {
     const header = extractHeader();
     const definitionPairs = extractDefinitionPairs();
@@ -233,6 +317,7 @@
     const headingPairs = extractHeadingPairs();
     const lists = extractLists();
     const legs = extractLegsTable();
+    const derivedInputs = deriveInputsFromLists(lists);
 
     const combined = { ...definitionPairs, ...headingPairs, ...labeledValues };
     Object.keys(combined).forEach((key) => {
@@ -254,6 +339,7 @@
       labeledValues: combined,
       lists,
       legs,
+      ...derivedInputs,
     };
 
     // Improve readability for Entry/Exit/Misc using list bullets when present
@@ -299,6 +385,17 @@
     if (!container) return null;
     const input = container.querySelector("input, textarea");
     return input;
+  }
+
+  function findDayButtons() {
+    const abbrs = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
+    const buttons = Array.from(document.querySelectorAll("button"));
+    const map = {};
+    buttons.forEach((btn) => {
+      const text = cleanText(btn.textContent || "");
+      if (abbrs.includes(text)) map[text] = btn;
+    });
+    return map;
   }
 
   function findLegGroups() {
@@ -372,6 +469,57 @@
     }
   }
 
+  function applyDerivedInputs(data) {
+    if (!data) return;
+
+    if (data.entryTime) setInputValue(findLabeledInput("Entry Time"), data.entryTime);
+    if (data.exitTime) setInputValue(findLabeledInput("Exit Time"), data.exitTime);
+
+    if (data.vixMax !== undefined && data.vixMax !== null) {
+      const vixInput = findLabeledInput("VIX");
+      setInputValue(vixInput, data.vixMax);
+    }
+
+    if (data.profitTarget !== undefined) {
+      const ptInput = findLabeledInput("Profit Target");
+      setInputValue(ptInput, data.profitTarget);
+    }
+
+    if (data.profitTargetMode) {
+      const ptMode = Array.from(document.querySelectorAll("button.selectInput")).find((b) => /profit/i.test(b.closest("div")?.previousElementSibling?.textContent || ""));
+      setSelectText(ptMode, data.profitTargetMode);
+    }
+
+    if (data.capProfits !== undefined) {
+      const toggle = findToggle("Cap");
+      const desired = Boolean(data.capProfits);
+      if (toggle) {
+        const isOn = toggle.getAttribute("aria-checked") === "true";
+        if (isOn !== desired) toggle.click();
+      }
+    }
+
+    if (Array.isArray(data.entryDays)) {
+      const dayMap = {
+        Monday: "M",
+        Tuesday: "Tu",
+        Wednesday: "W",
+        Thursday: "Th",
+        Friday: "F",
+        Saturday: "Sa",
+        Sunday: "Su",
+      };
+      const buttons = findDayButtons();
+      Object.entries(dayMap).forEach(([day, abbr]) => {
+        const btn = buttons[abbr];
+        if (!btn) return;
+        const desired = data.entryDays.includes(day);
+        const isOn = /ooGreen/.test(btn.className || "");
+        if (desired !== isOn) btn.click();
+      });
+    }
+  }
+
   function applyToForm(jsonText) {
     if (!jsonText) return setStatus("Nothing to apply");
     let parsed;
@@ -388,6 +536,8 @@
       applyDateRange(parsed.dates);
       applyTicker({ title: parsed.ticker });
       applyLegs(parsed.legs);
+
+      applyDerivedInputs(parsed);
 
       if (parsed.startingFunds) setInputValue(findLabeledInput("Starting Funds"), parsed.startingFunds);
       if (parsed.marginAllocationPct) setInputValue(findLabeledInput("Margin Allocation"), parsed.marginAllocationPct);
@@ -443,6 +593,7 @@
       applyTicker(parsed.header);
       applyLegs(parsed.legs);
       applyMiscMetrics(parsed);
+      applyDerivedInputs(parsed);
       setStatus("Applied (result payload)");
     }
   }
