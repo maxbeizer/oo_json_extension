@@ -1,9 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://optionomega.com/schemas/backtest-result.schema.json",
-  "title": "OptionOmega Backtest Result (Overlay Payload)",
+  "$id": "https://example.com/oo-json-extension/backtest-result.schema.json",
+  "title": "OptionOmega Overlay Output",
   "type": "object",
-  "additionalProperties": true,
+  "required": [
+    "url",
+    "title",
+    "scrapedAt",
+    "header",
+    "metrics",
+    "labeledValues",
+    "lists",
+    "legs"
+  ],
+  "additionalProperties": false,
   "properties": {
     "url": {
       "type": "string",
@@ -18,6 +28,12 @@
     },
     "header": {
       "type": "object",
+      "required": [
+        "title",
+        "tags",
+        "link"
+      ],
+      "additionalProperties": false,
       "properties": {
         "title": {
           "type": "string"
@@ -31,34 +47,22 @@
         "link": {
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "metrics": {
       "type": "object",
-      "description": "Key/value pairs scraped from dt/dd cards. Example keys: 'Underlying', 'Dates:', 'P/L', 'CAGR', 'Max Drawdown', 'Starting Capital', 'Ending Capital', 'Avg Per Trade', 'Avg Winner', 'Avg Loser', 'Max Winner', 'Max Loser', 'Avg Minutes In Trade', 'Trades', 'Winners', 'Opening Fees', 'Closing Fees', 'Entry Slippage', 'Exit Slippage'. Values are strings as rendered."
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "dateRange": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "from": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/definitions/dateRange"
     },
     "labeledValues": {
       "type": "object",
-      "description": "Union of metrics plus heading/value and two-child card heuristics"
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "lists": {
       "type": "array",
@@ -67,69 +71,86 @@
         "items": {
           "type": "string"
         }
-      },
-      "description": "Visible bullet/numbered lists (Entry, Misc, etc.)"
+      }
     },
     "legs": {
       "type": "array",
       "items": {
-        "type": "object",
-        "required": [
-          "side",
-          "type"
-        ],
-        "properties": {
-          "side": {
-            "type": "string",
-            "enum": [
-              "Sell",
-              "Buy"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "Call",
-              "Put"
-            ]
-          },
-          "qty": {
-            "type": [
-              "string",
-              "number",
-              "null"
-            ]
-          },
-          "greek": {
-            "type": [
-              "string",
-              "number",
-              "null"
-            ]
-          },
-          "dte": {
-            "type": [
-              "string",
-              "number",
-              "null"
-            ]
-          },
-          "text": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
+        "$ref": "#/definitions/leg"
       }
     }
   },
-  "required": [
-    "url",
-    "title",
-    "scrapedAt",
-    "header",
-    "metrics",
-    "labeledValues",
-    "lists",
-    "legs"
-  ]
+  "definitions": {
+    "dateRange": {
+      "description": "Parsed date range when found in the Dates card; may be null when absent.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "leg": {
+      "type": "object",
+      "required": [
+        "side",
+        "type",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "side": {
+          "type": "string",
+          "enum": [
+            "Buy",
+            "Sell"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Call",
+            "Put"
+          ]
+        },
+        "qty": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "dte": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "offsetType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

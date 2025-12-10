@@ -43,7 +43,9 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 ### Schema
 
-- Output JSON schema lives at `schema/output.schema.json` (draft-07). It mirrors what `content.js` emits: base metadata (`url`, `title`, `scrapedAt`), header, metrics/labeled values, lists, optional `dateRange`, and `legs` entries (`side`, `type`, `qty`, `dte`, `offsetType`, `text`).
+- Result payload schema: `schema/backtest-result.schema.json` (draft-07). Required top-level fields: `url`, `title`, `scrapedAt`, `header`, `metrics`, `labeledValues`, `lists`, `legs`. Optional/structured: `dateRange` (`from`/`to`/`text` or null) and leg entries with `side`, `type`, `qty`, `dte`, `offsetType`, `text` (and optional `greek` if present). This is what `content.js` emits.
+- Input form schema: `schema/backtest-input.schema.json` (draft-07) describes the fields for populating the "New Backtest" form when you paste JSON and click **Apply to form**.
+- `output.schema.json` has been merged into `backtest-result.schema.json`; only the two files above remain.
 
 ### License
 
