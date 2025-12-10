@@ -40,6 +40,10 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 - Adjust extraction logic in `content.js` (`extractLabeledValues`, `extractHeadingPairs`, `extractLists`).
 - Add custom selectors or stable test IDs from your app if you need deterministic fields.
 
+### Schema
+
+- Output JSON schema lives at `schema/output.schema.json` (draft-07). It mirrors what `content.js` emits: base metadata (`url`, `title`, `scrapedAt`), header, metrics/labeled values, lists, optional `dateRange`, and `legs` entries (`side`, `type`, `qty`, `dte`, `offsetType`, `text`).
+
 ### License
 
 MIT

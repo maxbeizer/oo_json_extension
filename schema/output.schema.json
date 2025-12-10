@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/oo-json-extension/output.schema.json",
+  "title": "OptionOmega Overlay Output",
+  "type": "object",
+  "required": [
+    "url",
+    "title",
+    "scrapedAt",
+    "header",
+    "metrics",
+    "labeledValues",
+    "lists",
+    "legs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "title": {
+      "type": "string"
+    },
+    "scrapedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "header": {
+      "type": "object",
+      "required": [
+        "title",
+        "tags",
+        "link"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "link": {
+          "type": "string"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "dateRange": {
+      "$ref": "#/definitions/dateRange"
+    },
+    "labeledValues": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "lists": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/leg"
+      }
+    }
+  },
+  "definitions": {
+    "dateRange": {
+      "description": "Parsed date range when found in the Dates card; may be null when absent.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "leg": {
+      "type": "object",
+      "required": [
+        "side",
+        "type",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "side": {
+          "type": "string",
+          "enum": [
+            "Buy",
+            "Sell"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Call",
+            "Put"
+          ]
+        },
+        "qty": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "dte": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "offsetType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
