@@ -141,11 +141,12 @@
             "null"
           ]
         },
-        "offsetType": {
+        "legType": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Which leg selector is active (matches input schema)"
         },
         "text": {
           "type": "string"

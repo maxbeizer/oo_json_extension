@@ -171,8 +171,8 @@
       const cBtn = buttons.find((b) => /\bC\b/.test(b.textContent || ""));
       const pBtn = buttons.find((b) => /\bP\b/.test(b.textContent || ""));
 
-      const offsetTypeBtn = row.querySelector("button.selectInput--nested") || row.querySelector("button.selectInput");
-      const offsetType = offsetTypeBtn ? cleanText(offsetTypeBtn.textContent || "") : undefined;
+      const legTypeBtn = row.querySelector("button.selectInput--nested") || row.querySelector("button.selectInput");
+      const legType = legTypeBtn ? cleanText(legTypeBtn.textContent || "") : undefined;
 
       const side = isActive(sBtn) ? "Sell" : isActive(bBtn) ? "Buy" : null;
       const optionType = isActive(cBtn) ? "Call" : isActive(pBtn) ? "Put" : null;
@@ -195,7 +195,7 @@
         type: optionType,
         qty,
         dte,
-        offsetType,
+        legType,
       };
       entry.text = cleanText([side, optionType, qtyRaw && `qty ${qtyRaw}`, dteRaw && `dte ${dteRaw}`].filter(Boolean).join(" "));
 
@@ -311,10 +311,8 @@
       const inputs = Array.from(group.querySelectorAll("input"));
       const qtyInput = inputs.find((inp) => inp.nextElementSibling && /QTY/i.test(inp.nextElementSibling.textContent || ""));
       const dteInput = inputs.find((inp) => inp.nextElementSibling && /DTE/i.test(inp.nextElementSibling.textContent || ""));
-      const greekInput = inputs.find((inp) => !(inp.nextElementSibling && /QTY|DTE/i.test(inp.nextElementSibling.textContent || "")));
 
       if (leg.qty) setInputValue(qtyInput, leg.qty);
-      if (leg.greek) setInputValue(greekInput, leg.greek);
       if (leg.dte) setInputValue(dteInput, leg.dte);
     });
   }

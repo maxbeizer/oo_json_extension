@@ -124,15 +124,7 @@
               "null"
             ]
           },
-          "greek": {
-            "type": [
-              "number",
-              "string",
-              "null"
-            ],
-            "description": "Offset value; number or string to allow ± and decimals"
-          },
-          "greekType": {
+          "legType": {
             "type": [
               "string",
               "null"
@@ -142,7 +134,7 @@
               "±",
               "none"
             ],
-            "description": "Which offset selector is active"
+            "description": "Which leg selector is active"
           },
           "dte": {
             "type": [
