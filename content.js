@@ -18,8 +18,11 @@
   panel.className = "llm-json-overlay";
 
   const summary = document.createElement("summary");
-  summary.textContent = "LLM JSON";
-  panel.appendChild(summary);
+  summary.className = "llm-json-summary";
+
+  const title = document.createElement("span");
+  title.className = "llm-json-title";
+  title.textContent = "Results as JSON";
 
   const controls = document.createElement("div");
   controls.className = "llm-json-controls";
@@ -35,13 +38,15 @@
   const status = document.createElement("span");
   status.className = "llm-json-status";
 
-  controls.append(copyButton, refreshButton, status);
+  controls.append(copyButton, refreshButton);
+  summary.append(title, status, controls);
+  panel.appendChild(summary);
 
   const textArea = document.createElement("textarea");
   textArea.className = "llm-json-textarea";
   textArea.setAttribute("aria-label", "Extracted JSON");
 
-  panel.append(controls, textArea);
+  panel.append(textArea);
   document.documentElement.appendChild(panel);
 
   function debounce(fn, delay = 250) {
@@ -58,6 +63,11 @@
     setTimeout(() => {
       if (status.textContent === msg) status.textContent = "";
     }, 1500);
+  }
+
+  function stopSummaryToggle(event) {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   function cleanText(str) {
@@ -354,7 +364,8 @@
     textArea.value = JSON.stringify(state.data, null, 2);
   }
 
-  copyButton.addEventListener("click", async () => {
+  copyButton.addEventListener("click", async (event) => {
+    stopSummaryToggle(event);
     if (!state.data) render();
     try {
       await navigator.clipboard.writeText(textArea.value);
@@ -364,7 +375,8 @@
     }
   });
 
-  refreshButton.addEventListener("click", () => {
+  refreshButton.addEventListener("click", (event) => {
+    stopSummaryToggle(event);
     render();
     setStatus("Refreshed");
   });

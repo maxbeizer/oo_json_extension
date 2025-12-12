@@ -15,11 +15,18 @@
 }
 
 #llm-json-overlay summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
   padding: 10px 14px;
   font-weight: 600;
   letter-spacing: 0.4px;
   outline: none;
+}
+
+.llm-json-title {
+  font-weight: 700;
 }
 
 #llm-json-overlay[open] summary {
@@ -30,7 +37,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 10px 14px 0;
+  margin-left: auto;
 }
 
 .llm-json-controls button {
@@ -58,7 +65,7 @@
   min-height: 260px;
   resize: vertical;
   padding: 12px 14px 14px;
-  margin: 6px 0 10px;
+  margin: 0 0 10px;
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
