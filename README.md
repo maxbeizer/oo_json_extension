@@ -2,7 +2,7 @@
 
 A small helper extension that shows a live JSON snapshot of a backtest for easy copy/paste.
 
-https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
+https://github.com/user-attachments/assets/32e0b257-30c5-46c4-806a-38bdcadb7ba8
 
 > [!WARNING]
 > This is experimental and best effort. The API is very much under heavy development and there is not a stable version at this time. Use at your own risk.
