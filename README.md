@@ -1,6 +1,6 @@
 ## OptionOmega JSON Overlay Extension
 
-A small helper extension that shows a live JSON snapshot of a backtest and can replay that data into the "New Backtest" form.
+A small helper extension that shows a live JSON snapshot of a backtest for easy copy/paste.
 
 https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
@@ -11,7 +11,7 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 
 - Load the folder as an unpacked extension (`chrome://extensions` → Load unpacked → `oo_json_extension`). No build step needed.
 - Open `optionomega.com/test/*`. A "LLM JSON" panel pins to the bottom of the page.
-- Click **Refresh** to rescan, **Copy** to clipboard, or **Apply to form** to backfill the new backtest drawer.
+- Click **Refresh** to rescan or **Copy** to clipboard.
 
 ### What it captures
 
@@ -26,13 +26,13 @@ https://github.com/user-attachments/assets/ce1fcdd8-eff1-4050-8a1f-f15585a0cfcd
 ### Using the panel
 
 - Read/Copy: Use **Refresh** then **Copy** to grab the JSON for an LLM or logs.
-- Apply to form: Paste JSON (from this extension or the input schema) and hit **Apply to form**. Dates, ticker label, legs, and common fee/slippage fields will be filled when selectors are found.
 - Tweak before copy: You can edit the textarea manually; the panel won’t overwrite your edits until you hit **Refresh**.
+
+> Note: Form autofill was removed because the OptionOmega UI renders inputs dynamically; this extension now focuses solely on extracting and copying results.
 
 ### Schemas
 
 - Result payload (`content.js` output): `schema/backtest-result.schema.json` (draft-07). Required: `url`, `title`, `scrapedAt`, `header`, `metrics`, `labeledValues`, `lists`, `legs`. Optional: `dateRange` (`from`/`to`/`text` or null; `from`/`to` emitted as ISO 8601 when parseable). Legs include `side`, `type`, `qty`, `dte`, `legType`, `text`.
-- Input form payload (for **Apply to form**): `schema/backtest-input.schema.json` (draft-07) documents the accepted fields for seeding the backtest drawer (dates expect ISO 8601 `YYYY-MM-DD`).
 
 ### Extend or tweak
 
